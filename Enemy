@@ -1,0 +1,55 @@
+package com.egovictoria.jumpinjellyfish;
+
+public class Enemy {
+
+    private int enemyX, enemyY, currentFrame, velocity;
+    public static int maxFrame;
+
+    public Enemy(){
+        enemyX = AppConstants.SCREEN_WIDTH/2 - AppConstants.getBitmapBank().getJellyWidth()/2;
+        enemyY = AppConstants.SCREEN_HEIGHT/2 - AppConstants.getBitmapBank().getJellyHeight()/2;
+        currentFrame = 0;
+        maxFrame = 7;
+        velocity = 18;
+    }
+
+    // Getter method for velocity
+    public int getVelocity(){
+        return velocity;
+    }
+
+    // Setter method for velocity
+    public void setVelocity(int x){
+        this.velocity = x;
+    }
+
+    // Getter method for current frame
+    public int getCurrentFrame(){
+        return currentFrame;
+    }
+
+    // Setter method for current frame
+    public void setCurrentFrame(int x){
+        this.currentFrame = x;
+    }
+
+    // Geter method for getting X-coordinate of the enemy
+    public int getX(){
+        return enemyX;
+    }
+
+    // Getter method for getting the Y-coordinate of the enemy
+    public int getY(){
+        return enemyY;
+    }
+
+    // Setter method for setting the X-coordinate of the enemy
+    public void setX(int x){
+        this.enemyX = x;
+    }
+
+    //Setter method for setting the Y-coordinate of the enemy
+    public void setY(int y){
+        this.enemyY = y;
+    }
+}
