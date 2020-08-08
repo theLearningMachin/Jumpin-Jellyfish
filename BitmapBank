@@ -1,0 +1,144 @@
+package com.egovictoria.jumpinjellyfish;
+
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.ScaleDrawable;
+import android.util.Log;
+
+public class BitmapBank {
+
+    private final String TAG = "BitmapBank";
+    private Bitmap background;
+    private Bitmap[] jellyFish;
+    private Bitmap[] enemy;
+    private Bitmap upperTentacle, lowerTentacle;
+    private Bitmap lowerTentacle2, upperTentacle2;
+    private Bitmap cloud;
+
+    BitmapBank(Resources res) {
+        background = BitmapFactory.decodeResource(res, R.drawable.background);
+        cloud = BitmapFactory.decodeResource(res, R.drawable.the_cloud);
+        jellyFish = new Bitmap[6];
+        jellyFish[0] = BitmapFactory.decodeResource(res, R.drawable.jelly_frame1);
+        jellyFish[1] = BitmapFactory.decodeResource(res, R.drawable.jelly_frame1);
+        jellyFish[2] = BitmapFactory.decodeResource(res, R.drawable.jelly_frame2);
+        jellyFish[3] = BitmapFactory.decodeResource(res, R.drawable.jelly_frame2);
+        jellyFish[4] = BitmapFactory.decodeResource(res, R.drawable.jelly_frame3);
+        jellyFish[5] = BitmapFactory.decodeResource(res, R.drawable.jelly_frame3);
+        enemy = new Bitmap[8];
+        enemy[0] = BitmapFactory.decodeResource(res, R.drawable.eyeball_frame1);
+        enemy[1] = BitmapFactory.decodeResource(res, R.drawable.eyeball_frame2);
+        enemy[2] = BitmapFactory.decodeResource(res, R.drawable.eyeball_frame3);
+        enemy[3] = BitmapFactory.decodeResource(res, R.drawable.eyeball_frame4);
+        enemy[4] = BitmapFactory.decodeResource(res, R.drawable.eyeball_frame5);
+        enemy[5] = BitmapFactory.decodeResource(res, R.drawable.eyeball_frame6);
+        enemy[6] = BitmapFactory.decodeResource(res, R.drawable.eyeball_frame7);
+        enemy[7] = BitmapFactory.decodeResource(res, R.drawable.eyeball_frame8);
+        upperTentacle = BitmapFactory.decodeResource(res, R.drawable.upper_tentacle);
+        lowerTentacle = BitmapFactory.decodeResource(res, R.drawable.lower_tentacle);
+        upperTentacle2 = BitmapFactory.decodeResource(res, R.drawable.upper_tentacle2);
+        lowerTentacle2 = BitmapFactory.decodeResource(res, R.drawable.lower_tentacle2);
+
+        if(AppConstants.SCREEN_WIDTH > 1500){
+            upperTentacle = Bitmap.createScaledBitmap(upperTentacle, upperTentacle.getWidth()*2, upperTentacle.getHeight()*2, true);
+            lowerTentacle = Bitmap.createScaledBitmap(lowerTentacle, lowerTentacle.getWidth()*2, lowerTentacle.getHeight()*2, true);
+            upperTentacle2 = Bitmap.createScaledBitmap(upperTentacle2, upperTentacle2.getWidth()*2, upperTentacle2.getHeight()*2, true);
+            lowerTentacle2 = Bitmap.createScaledBitmap(lowerTentacle2, lowerTentacle2.getWidth()*2, lowerTentacle2.getHeight()*2, true);
+
+            background = Bitmap.createScaledBitmap(background, background.getWidth()*2, background.getHeight()*2, true);
+            cloud = Bitmap.createScaledBitmap(cloud, cloud.getWidth()*2, cloud.getHeight()*2, true);
+
+            enemy[0] = Bitmap.createScaledBitmap(enemy[0], enemy[0].getWidth()*2, enemy[0].getHeight()*2, true);
+            enemy[1] = Bitmap.createScaledBitmap(enemy[1], enemy[1].getWidth()*2, enemy[1].getHeight()*2, true);
+            enemy[2] = Bitmap.createScaledBitmap(enemy[2], enemy[2].getWidth()*2, enemy[2].getHeight()*2, true);
+            enemy[3] = Bitmap.createScaledBitmap(enemy[3], enemy[3].getWidth()*2, enemy[3].getHeight()*2, true);
+            enemy[4] = Bitmap.createScaledBitmap(enemy[4], enemy[4].getWidth()*2, enemy[4].getHeight()*2, true);
+            enemy[5] = Bitmap.createScaledBitmap(enemy[5], enemy[5].getWidth()*2, enemy[5].getHeight()*2, true);
+            enemy[6] = Bitmap.createScaledBitmap(enemy[6], enemy[6].getWidth()*2, enemy[6].getHeight()*2, true);
+            enemy[7] = Bitmap.createScaledBitmap(enemy[7], enemy[7].getWidth()*2, enemy[7].getHeight()*2, true);
+        }
+    }
+
+    public Bitmap getCloud() {
+        return cloud;
+    }
+
+    public int getCloudWidth() {
+        return cloud.getWidth();
+    }
+
+    public int getCloudHeight() {
+        return cloud.getHeight();
+    }
+
+    public Bitmap getEnemy(int frame) {
+        return enemy[frame];
+    }
+
+    public int getEnemyWidth() {
+        return enemy[0].getWidth();
+    }
+
+    public int getEnemyHeight() {
+        return enemy[0].getHeight();
+    }
+
+    // return tentacle lower 2 bitmap
+    public Bitmap getLowerTentacle2(){
+        return lowerTentacle2;
+    }
+
+    // return tentacle upper 2 bitmap
+    public Bitmap getUpperTentacle2(){
+        return upperTentacle2;
+    }
+
+    // Return tentacle upper Bitmap
+    public Bitmap getUpperTentacle(){
+        return upperTentacle;
+    }
+
+    //return tentacle lower Bitmap
+    public Bitmap getLowerTentacle(){
+        return lowerTentacle;
+    }
+
+    // return tentacle width
+    public int getTentacleWidth(){
+        return upperTentacle.getWidth();
+    }
+
+    //return tube height
+    public int getTentacleHeight(){
+        return upperTentacle.getHeight();
+    }
+
+    // Return jellyFish bitmap of frame
+    public Bitmap getJelly(int frame) {
+        return jellyFish[frame];
+    }
+
+    public int getJellyWidth(){
+        return jellyFish[0].getWidth();
+    }
+
+    public int getJellyHeight(){
+        return jellyFish[0].getHeight();
+    }
+
+    //Return background bitmap
+    public Bitmap getBackground(){
+        return background;
+    }
+
+    //Return background width
+    public float getBackgroundWidth(){
+        return background.getWidth();
+    }
+
+    //Return background height
+    public float getBackgroundHeight(){
+        return background.getHeight();
+    }
+}
