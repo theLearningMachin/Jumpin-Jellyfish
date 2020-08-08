@@ -1,0 +1,35 @@
+package com.egovictoria.jumpinjellyfish;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.Bundle;
+import android.util.Log;
+import android.widget.ArrayAdapter;
+import android.widget.ListAdapter;
+import android.widget.ListView;
+
+public class Achievements extends AppCompatActivity {
+
+    private static String TAG = "Achievements";
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_achievements);
+
+        // initialize the listView
+        ListView listView = findViewById(R.id.list_view_achievements);
+
+        // get the achievements from the intent
+        String[] achievements = getIntent().getStringArrayExtra("Achievements List");
+        Log.d(TAG, "onCreate: achievements: "+achievements);
+
+        // set the ArrayAdapter
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_list_item_1,
+                achievements
+        );
+        listView.setAdapter(adapter);
+    }
+}
