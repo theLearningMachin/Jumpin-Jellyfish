@@ -1,0 +1,103 @@
+package com.egovictoria.jumpinjellyfish;
+
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.graphics.BitmapFactory;
+import android.media.MediaPlayer;
+import android.os.Build;
+import android.util.DisplayMetrics;
+import android.util.Log;
+import android.view.Display;
+import android.view.WindowManager;
+
+import androidx.annotation.RequiresApi;
+
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
+
+public class AppConstants {
+
+    private static String TAG = "AppConstants";
+    private static BitmapBank bitmapBank; // Bitmap object reference
+    private static GameEngine gameEngine; // GameEngine object reference
+    static boolean fireEnemies;
+    static int SCREEN_HEIGHT, SCREEN_WIDTH;
+    static int gravity;
+    static int VELOCITY_WHEN_JUMPED;
+    public static int gapBetweenTopAndBottomTentacles;
+    static int numberOfTentacles;
+    static int tentacleVelocity;
+    static int minTentacleOffsetY;
+    static int maxTentacleOffsetY;
+    static int distanceBetweenTentacles;
+    static SoundBank soundBank;
+    static Context gameActivityContext;
+
+    public static void initialization(Context context){
+        setScreenSize(context);
+        bitmapBank = new BitmapBank(context.getResources());
+        setGameConstants(context);
+        gameEngine = new GameEngine();
+        soundBank = new SoundBank(context);
+
+    }
+
+    public static SoundBank getSoundBank(){
+        return soundBank;
+    }
+
+    public static void setGameConstants(Context context){
+        // set absolute game constants
+        AppConstants.gravity = 4;
+        AppConstants.VELOCITY_WHEN_JUMPED = -40;
+        gapBetweenTopAndBottomTentacles = AppConstants.SCREEN_HEIGHT/3;
+        AppConstants.numberOfTentacles = 2;
+        AppConstants.tentacleVelocity = 12;
+        AppConstants.minTentacleOffsetY = (int)(AppConstants.gapBetweenTopAndBottomTentacles/2.0);
+        AppConstants.maxTentacleOffsetY = AppConstants.SCREEN_HEIGHT - AppConstants.minTentacleOffsetY - AppConstants.gapBetweenTopAndBottomTentacles;
+        AppConstants.distanceBetweenTentacles = (AppConstants.SCREEN_WIDTH/2)+(AppConstants.SCREEN_WIDTH/4)+(AppConstants.SCREEN_WIDTH/8);
+
+        // increase game speed if the screen is large
+        if(AppConstants.SCREEN_WIDTH > 1500) {
+            AppConstants.tentacleVelocity = 24;
+            AppConstants.gravity = 8;
+            AppConstants.VELOCITY_WHEN_JUMPED = -80;
+        }
+
+        // set game constants based on SharedPreferences
+        SharedPreferences preferences = context.getSharedPreferences("JellyPreferences", Context.MODE_PRIVATE);
+        Set<String> achievements = new HashSet<String>(preferences.getStringSet("Jelly Achievements", new HashSet<String>()));
+        Log.d(TAG, "setGameConstants: achievements: " + achievements);
+        AppConstants.fireEnemies = achievements.contains("100 Easy");
+        if(fireEnemies){
+            gapBetweenTopAndBottomTentacles += AppConstants.SCREEN_HEIGHT/6;
+            minTentacleOffsetY = minTentacleOffsetY/2;
+            maxTentacleOffsetY = AppConstants.SCREEN_HEIGHT - AppConstants.minTentacleOffsetY - AppConstants.gapBetweenTopAndBottomTentacles;
+        }
+        Log.d(TAG, "setGameConstants: Firing Enemies is " + fireEnemies);
+    }
+
+    // Return BitmapBank instance
+    public static BitmapBank getBitmapBank(){
+        return bitmapBank;
+    }
+
+    // Return GameEngine instance
+    public static GameEngine getGameEngine(){
+        return gameEngine;
+    }
+
+    private static void setScreenSize(Context context){
+        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        Display display = wm.getDefaultDisplay();
+        DisplayMetrics metrics = new DisplayMetrics();
+        display.getMetrics(metrics);
+        int width = metrics.widthPixels;
+        int height = metrics.heightPixels;
+        AppConstants.SCREEN_HEIGHT = height;
+        AppConstants.SCREEN_WIDTH = width;
+        Log.wtf(TAG, "setScreenSize: screenSize"+AppConstants.SCREEN_HEIGHT+AppConstants.SCREEN_WIDTH);
+    }
+
+}
