@@ -1,0 +1,55 @@
+package com.egovictoria.jumpinjellyfish;
+
+public class Jelly {
+
+    private int jellyX, jellyY, currentFrame, velocity;
+    public static int maxFrame;
+
+    public Jelly(){
+        jellyX = AppConstants.SCREEN_WIDTH/2 - AppConstants.getBitmapBank().getJellyWidth()/2;
+        jellyY = AppConstants.SCREEN_HEIGHT/2 - AppConstants.getBitmapBank().getJellyHeight()/2;
+        currentFrame = 0;
+        maxFrame = 5;
+        velocity = 0;
+    }
+
+    // Getter method for velocity
+    public int getVelocity(){
+        return velocity;
+    }
+
+    // Setter method for velocity
+    public void setVelocity(int x){
+        this.velocity = x;
+    }
+
+    // Getter method for current frame
+    public int getCurrentFrame(){
+        return currentFrame;
+    }
+
+    // Setter method for current frame
+    public void setCurrentFrame(int x){
+        this.currentFrame = x;
+    }
+
+    // Geter method for getting X-coordinate of the jelly
+    public int getX(){
+        return jellyX;
+    }
+
+    // Getter method for getting the Y-coordinate of the jelly
+    public int getY(){
+        return jellyY;
+    }
+
+    // Setter methid for setting the X-coordinate of the jelly
+    public void setX(int x){
+        this.jellyX = x;
+    }
+
+    //Setter method for setting the Y-coordinate of the jelly
+    public void setY(int y){
+        this.jellyY = y;
+    }
+}
