@@ -1,0 +1,283 @@
+package com.egovictoria.jumpinjellyfish;
+
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Point;
+import android.util.Log;
+import android.widget.Toast;
+
+import java.sql.Array;
+import java.util.ArrayList;
+import java.util.Random;
+
+public class GameEngine {
+
+    private final String TAG = "GameEngine";
+    private BackgroundImage backgroundImage;
+    private Enemy enemy;
+    private Cloud cloud;
+    public Jelly jelly;
+    static int gameState;
+    private ArrayList<Tentacle> tentacles;
+    private Random random;
+    public int score; // stores the player score
+    private int scoringTentacle; // keeps track of the scoring tentacle
+    private Paint scorePaint;
+    private boolean isReady;
+    private int jellyCenterX, jellyCenterY, scoringTentX, scoringLowTentY, scoringUpTentY, tentacleWidth;
+    private int eyeTop, eyeLeft, eyeBottom, eyeRight;
+    private int tailTop, tailLeft, tailBottom, tailRight;
+
+    public GameEngine() {
+        backgroundImage = new BackgroundImage();
+        jelly = new Jelly();
+        cloud = new Cloud();
+        enemy = new Enemy();
+        enemy.setX(AppConstants.SCREEN_WIDTH);
+        enemy.setCurrentFrame(0);
+        isReady = true;
+        // 0 = Not started, 1= Playing, 2 = Game Over
+        gameState = 0;
+        tentacles = new ArrayList<>();
+        random = new Random();
+        for (int i = 0; i < AppConstants.numberOfTentacles; i++) {
+            int tentacleX = AppConstants.SCREEN_WIDTH + i * AppConstants.distanceBetweenTentacles;
+            // Get upperTentacleOffsetY
+            int upperTentacleOffsetY = AppConstants.minTentacleOffsetY + random.nextInt(AppConstants.maxTentacleOffsetY - AppConstants.minTentacleOffsetY + 1);
+            //create tentacle object
+            Tentacle tentacle = new Tentacle(tentacleX, upperTentacleOffsetY);
+            tentacles.add(tentacle);
+        }
+        score = 0;
+        scoringTentacle = 0;
+        scorePaint = new Paint();
+        scorePaint.setColor(Color.BLUE);
+        scorePaint.setTextSize(100);
+        scorePaint.setTextAlign(Paint.Align.LEFT);
+    }
+
+    // objects in android are drawn with the origin (0, 0) being the top left of the
+    // screen and (maxX, maxY) is the bottom right. So:
+    //.(0,0)  |       .(maxX, 0)
+    //        |
+    // _______|________
+    //        |
+    //        |
+    // .(0,maxY)      .(maxX, Maxy)
+
+    public void updateAndDrawEnemyOne(Canvas canvas) {
+        // update the relevant positioning variables
+        // jellyfish centerpoint
+        jellyCenterX = (jelly.getX() + AppConstants.getBitmapBank().getJellyWidth()/2);
+        jellyCenterY = (jelly.getY() + AppConstants.getBitmapBank().getJellyHeight()/2);
+
+        // enemy hitboxes
+        int enemyWidth = AppConstants.getBitmapBank().getEnemyWidth();
+        int enemyHeight = AppConstants.getBitmapBank().getEnemyHeight();
+        // eyeball
+        eyeTop = enemy.getY();
+        eyeLeft = enemy.getX();
+        eyeBottom = eyeTop + enemyHeight;
+        eyeRight = eyeLeft + enemyWidth/3;
+        // tail
+        tailTop = enemy.getY();
+        tailLeft = eyeRight;
+        tailBottom = eyeBottom;
+        tailRight = tailLeft + enemyWidth;
+        // enemies will only spawn past the fifth tentacle
+        if(score > 4){
+            // if the jelly touches the Watcher then the player loses
+            // enemy.getX() refers to the origin at the top left of the jelly, so in order to track
+            // the jelly's position relative to the eyeball
+            if((jellyCenterX > eyeLeft) && (jellyCenterX < eyeRight) &&
+                    (jellyCenterY < eyeBottom) && (jellyCenterY > eyeTop)){
+                // game over
+                gameState = 2;
+                Context context = AppConstants.gameActivityContext;
+                Intent intent = new Intent(context, GameOver.class);
+                // add the score to the intent so the high score can be set
+                intent.putExtra("score", score);
+                context.startActivity(intent);
+                ((Activity) context).finish();
+                // reset the music and play the fail sound
+                AppConstants.getSoundBank().pauseAndResetWalkingTheFish();
+                AppConstants.getSoundBank().playFail();
+
+            // if the jelly falls on the Watcher's tentacles, then the Watcher dies. They must be
+            // falling in order to achieve the score bonus
+            }else if((jellyCenterY < tailBottom) && (jellyCenterY > tailTop) &&
+                    (jellyCenterX > tailLeft) && (jellyCenterX < tailRight) &&
+                    (jelly.getVelocity() > 0)){
+                // reward the player for murdering an enemy, a little high because I want the player
+                // to try to murder as many Watchers as they can
+                score+=3;
+                canvas.drawText("Score: " + score, 0, 100, scorePaint);
+                AppConstants.getSoundBank().playSuccess();
+
+                // "despawn" the enemy by teleporting it past the edge of the screen
+                enemy.setX(-AppConstants.getBitmapBank().getEnemyWidth());
+            }
+
+            // determine if the enemy needs to be redrawn, if it does then spawn it at the current
+            // height of the player plus an eighth of the screen's height
+            if(isReady){
+                enemy.setY(jellyCenterY + AppConstants.SCREEN_HEIGHT/8);
+                isReady = false;
+            }
+
+            // check if the screen is large, if so, set enemyvelocity to a higher number
+            if(AppConstants.SCREEN_WIDTH > 1500) {
+                enemy.setVelocity(36);
+            }
+
+            // set the enemy X value so it can be drawn
+            enemy.setX(enemy.getX() - enemy.getVelocity());
+            if (enemy.getX() < -AppConstants.getBitmapBank().getEnemyWidth()) {
+                enemy.setX(AppConstants.SCREEN_WIDTH * 2);
+                isReady = true;
+            }
+            // draw the next frame
+            int currentEnemyFrame = enemy.getCurrentFrame();
+            canvas.drawBitmap(AppConstants.getBitmapBank().getEnemy(currentEnemyFrame), enemy.getX(), enemy.getY(), null);
+            currentEnemyFrame += 1;
+            enemy.setCurrentFrame(currentEnemyFrame);
+
+            // If it exceeds maxFrame re-initialize to 0
+            if (currentEnemyFrame > Enemy.maxFrame) {
+                enemy.setCurrentFrame(0);
+            }
+        }
+    }
+
+    public void updateAndDrawTentacles(Canvas canvas) {
+        // update the relevant positioning variables
+        // jelly center
+        jellyCenterX = (jelly.getX() + AppConstants.getBitmapBank().getJellyWidth()/2);
+        jellyCenterY = (jelly.getY() + AppConstants.getBitmapBank().getJellyHeight()/2);
+
+        // tentacle
+        scoringTentX = tentacles.get(scoringTentacle).getTentacleX();
+        scoringLowTentY = tentacles.get(scoringTentacle).getLowerTentacleY();
+        scoringUpTentY = tentacles.get(scoringTentacle).getUpperTentacleOffsetY();
+        tentacleWidth = AppConstants.getBitmapBank().getTentacleWidth();
+
+        if (gameState == 1) {
+            // check if the jelly touches a tentacle, if so then the game is over
+            // based on the centerpoint of the jelly and the edge of the tentacle bitmap
+            if ((jellyCenterX > scoringTentX) &&
+                    (jellyCenterX < (scoringTentX+tentacleWidth)) &&
+                    ((jellyCenterY > scoringLowTentY) || (jellyCenterY < scoringUpTentY))) {
+                // game over
+                gameState = 2;
+                Context context = AppConstants.gameActivityContext;
+                Intent intent = new Intent(context, GameOver.class);
+                // add the score to the intent so the high score can be set
+                intent.putExtra("score", score);
+                context.startActivity(intent);
+                ((Activity) context).finish();
+                // reset the music and play the fail sound
+                AppConstants.getSoundBank().pauseAndResetWalkingTheFish();
+                AppConstants.getSoundBank().playFail();
+
+            // if the player hasn't lost by the time the right edge of the jelly's hitbox passes
+            // the tentacle's left side, then increase the score by one.
+            }else if((scoringTentX + tentacleWidth) < jellyCenterX) {
+                score++;
+                scoringTentacle++;
+                // if the number attached to the scoring tentacle is larger than the max number
+                // of tentacles, reset the scoring tentacle to zero
+                if (scoringTentacle > AppConstants.numberOfTentacles - 1) {
+                    scoringTentacle = 0;
+                }
+            }
+            // update the tentacle values per the screen refresh and velocity values, then draw the tentacles
+            for (int i = 0; i < AppConstants.numberOfTentacles; i++) {
+                if (tentacles.get(i).getTentacleX() < -AppConstants.getBitmapBank().getTentacleWidth()) {
+                    tentacles.get(i).setTentacleX(tentacles.get(i).getTentacleX() + AppConstants.numberOfTentacles * AppConstants.distanceBetweenTentacles);
+                    int upperTentacleOffsetY = AppConstants.minTentacleOffsetY + random.nextInt(AppConstants.maxTentacleOffsetY - AppConstants.minTentacleOffsetY + 1);
+                    tentacles.get(i).setUpperTentacleOffsetY(upperTentacleOffsetY);
+                    tentacles.get(i).setTentacleVar();
+                }
+                tentacles.get(i).setTentacleX(tentacles.get(i).getTentacleX() - AppConstants.tentacleVelocity);
+                if (tentacles.get(i).getTentacleVar() == 0) {
+                    canvas.drawBitmap(AppConstants.getBitmapBank().getUpperTentacle(), tentacles.get(i).getTentacleX(), tentacles.get(i).getUpperTentacleY(), null);
+                    canvas.drawBitmap(AppConstants.getBitmapBank().getLowerTentacle(), tentacles.get(i).getTentacleX(), tentacles.get(i).getLowerTentacleY(), null);
+                } else {
+                    canvas.drawBitmap(AppConstants.getBitmapBank().getUpperTentacle2(), tentacles.get(i).getTentacleX(), tentacles.get(i).getUpperTentacleY(), null);
+                    canvas.drawBitmap(AppConstants.getBitmapBank().getLowerTentacle2(), tentacles.get(i).getTentacleX(), tentacles.get(i).getLowerTentacleY(), null);
+                }
+            }
+            // update the score on screen
+            canvas.drawText("Score: " + score, 0, 100, scorePaint);
+        }
+    }
+
+    public void updateAndDrawBackgroundImage(Canvas canvas) {
+
+        // update the background positioning variable, reset if it's done
+        backgroundImage.setX(backgroundImage.getX() - backgroundImage.getVelocity());
+        if (backgroundImage.getX() < -AppConstants.getBitmapBank().getBackgroundWidth()) {
+            backgroundImage.setX(0);
+        }
+
+        // draw the background
+        canvas.drawBitmap(AppConstants.getBitmapBank().getBackground(), backgroundImage.getX(), backgroundImage.getY(), null);
+        if (backgroundImage.getX() < -(AppConstants.getBitmapBank().getBackgroundWidth() - AppConstants.SCREEN_WIDTH)) {
+            canvas.drawBitmap(AppConstants.getBitmapBank().getBackground(), backgroundImage.getX() + AppConstants.getBitmapBank().getBackgroundWidth(), backgroundImage.getY(), null);
+        }
+    }
+
+    public void updateAndDrawCloud(Canvas canvas) {
+        cloud.setCloudX(cloud.getCloudX() - cloud.getCloudVelocity());
+        if (cloud.getCloudX() < -AppConstants.getBitmapBank().getCloudWidth()) {
+            cloud.setCloudX(0);
+        }
+        canvas.drawBitmap(AppConstants.getBitmapBank().getCloud(), cloud.getCloudX(), cloud.getCloudY(), null);
+        if (cloud.getCloudX() < -(AppConstants.getBitmapBank().getCloudWidth() - AppConstants.SCREEN_WIDTH)) {
+            canvas.drawBitmap(AppConstants.getBitmapBank().getCloud(), cloud.getCloudX() + AppConstants.getBitmapBank().getCloudWidth(), cloud.getCloudY(), null);
+        }
+    }
+
+    public void updateAndDrawJelly(Canvas canvas) {
+        // intitialize some variables
+        int jellyBottom = jelly.getY() + AppConstants.getBitmapBank().getJellyHeight();
+        int jellyTop = jelly.getY();
+        if (gameState == 1) {
+            // hold the jelly in place until the player taps the screen
+            if (jelly.getY() < (AppConstants.SCREEN_HEIGHT - AppConstants.getBitmapBank().getJellyHeight()) | jelly.getVelocity() < 0) {
+                // change the position of the jelly based on its Y coordinate, velocity, and gravity
+                jelly.setVelocity(jelly.getVelocity() + AppConstants.gravity);
+                jelly.setY(jelly.getY() + jelly.getVelocity());
+            }
+        }
+        // get the current frame in the animation and draw it
+        int currentFrame = jelly.getCurrentFrame();
+        canvas.drawBitmap(AppConstants.getBitmapBank().getJelly(currentFrame), jelly.getX(), jelly.getY(), null);
+        currentFrame++;
+        // If it exceeds maxFrame re-initialize to 0
+        if (currentFrame > Jelly.maxFrame) {
+            currentFrame = 0;
+        }
+        jelly.setCurrentFrame(currentFrame);
+
+        // if the jelly goes over or under the screen then the player loses the game
+        if((jellyBottom < 0) || (jellyTop > AppConstants.SCREEN_HEIGHT)){
+            // game over
+            gameState = 2;
+            Context context = AppConstants.gameActivityContext;
+            Intent intent = new Intent(context, GameOver.class);
+            // add the score to the intent so the high score can be set
+            intent.putExtra("score", score);
+            context.startActivity(intent);
+            ((Activity) context).finish();
+            // reset the music and play the fail sound
+            AppConstants.getSoundBank().pauseAndResetWalkingTheFish();
+            AppConstants.getSoundBank().playFail();
+        }
+    }
+}
+
