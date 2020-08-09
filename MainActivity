@@ -1,0 +1,48 @@
+import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
+
+import java.util.Arrays;
+
+public class MainActivity extends AppCompatActivity {
+
+    private final String TAG = "MainActivity";
+    AdView adView;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        MobileAds.initialize(this, new OnInitializationCompleteListener() {
+            @Override
+            public void onInitializationComplete(InitializationStatus initializationStatus) {
+            }
+        });
+
+        adView = findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        adView.loadAd(adRequest);
+
+        AppConstants.initialization(this.getApplicationContext());
+        AppConstants.getSoundBank().playFloating();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        AppConstants.getSoundBank().pauseAndResetFloating();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        AppConstants.getSoundBank().playFloating();
+    }
+
+    public void startGame(View view) {
+        //Log.i("ImageButton","clicked");
+        Intent intent = new Intent(this, GameActivity.class);
+        AppConstants.getSoundBank().pauseAndResetFloating();
+        startActivity(intent);
+        finish();
+    }
+}
