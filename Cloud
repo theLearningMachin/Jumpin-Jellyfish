@@ -1,0 +1,36 @@
+package com.egovictoria.jumpinjellyfish;
+
+public class Cloud {
+
+    private int cloudX, cloudY, cloudVelocity;
+
+    public int getCloudX() {
+        return cloudX;
+    }
+
+    public void setCloudX(int cloudX) {
+        this.cloudX = cloudX;
+    }
+
+    public int getCloudY() {
+        return cloudY;
+    }
+
+    public void setCloudY(int cloudY) {
+        this.cloudY = cloudY;
+    }
+
+    public int getCloudVelocity() {
+        return cloudVelocity;
+    }
+
+    public void setCloudVelocity(int cloudVelocity) {
+        this.cloudVelocity = cloudVelocity;
+    }
+
+    public Cloud() {
+        cloudX = 0;
+        cloudY = (AppConstants.SCREEN_HEIGHT/2);
+        cloudVelocity = 5;
+    }
+}
