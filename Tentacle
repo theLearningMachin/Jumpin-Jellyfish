@@ -1,0 +1,48 @@
+package com.egovictoria.jumpinjellyfish;
+
+import java.util.Random;
+
+public class Tentacle {
+    // tentacleX = tentacle x coordinate, upperTentacleOffsetY = top tentacle bottom edge coordinate
+    private int tentacleX, upperTentacleOffsetY;
+    private Random random;
+    private  int tentacleVar;
+
+    public Tentacle(int x, int offset){
+        this.tentacleX = x;
+        this.upperTentacleOffsetY = offset;
+        random = new Random();
+    }
+
+    public void setTentacleVar(){
+        tentacleVar = random.nextInt(2);
+    }
+
+    public int getTentacleVar(){
+        return tentacleVar;
+    }
+
+    public int getUpperTentacleOffsetY(){
+        return upperTentacleOffsetY;
+    }
+
+    public int getTentacleX(){
+        return tentacleX;
+    }
+
+    public int getUpperTentacleY(){
+        return upperTentacleOffsetY - AppConstants.getBitmapBank().getTentacleHeight();
+    }
+
+    public int getLowerTentacleY(){
+        return upperTentacleOffsetY + AppConstants.gapBetweenTopAndBottomTentacles;
+    }
+
+    public void setTentacleX(int x){
+        this.tentacleX = x;
+    }
+
+    public void setUpperTentacleOffsetY(int y){
+        this.upperTentacleOffsetY = y;
+    }
+}
