@@ -1,0 +1,71 @@
+package com.egovictoria.jumpinjellyfish;
+
+import android.content.Context;
+import android.media.MediaPlayer;
+
+public class SoundBank {
+
+    private Context context;
+    private MediaPlayer success, fail, bounce, wiggle, floating, walkingTheFish;
+
+    public SoundBank(Context context) {
+        this.context = context;
+        wiggle = MediaPlayer.create(context, R.raw.jelly_wiggle);
+        success = MediaPlayer.create(context, R.raw.successful_tentacle);
+        fail = MediaPlayer.create(context, R.raw.fail);
+        bounce = MediaPlayer.create(context, R.raw.bounce);
+        floating = MediaPlayer.create(context, R.raw.floating);
+        walkingTheFish = MediaPlayer.create(context, R.raw.walking_the_fish);
+    }
+
+    public void playWiggle(){
+        if(wiggle!=null){
+            wiggle.start();
+        }
+    }
+
+    public void playSuccess(){
+        if(success!=null){
+            success.start();
+        }
+    }
+
+    public void playFail(){
+        if(fail!=null){
+            fail.start();
+        }
+    }
+
+    public void playBounce(){
+        if(bounce!=null){
+            bounce.start();
+        }
+    }
+
+    public void playFloating(){
+        if(floating!=null){
+            floating.start();
+        }
+    }
+
+    public void pauseAndResetFloating(){
+        if(floating != null){
+            floating.reset();
+            floating.pause();
+        }
+    }
+
+    public void playWalkingTheFish(){
+        if(walkingTheFish != null) {
+            walkingTheFish.start();
+            walkingTheFish.setLooping(true);
+        }
+    }
+
+    public void pauseAndResetWalkingTheFish(){
+        if(walkingTheFish != null) {
+            walkingTheFish.pause();
+            walkingTheFish.reset();
+        }
+    }
+}
