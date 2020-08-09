@@ -1,0 +1,133 @@
+package com.egovictoria.jumpinjellyfish;
+
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+
+public class GameOver extends AppCompatActivity {
+
+    private String TAG = "GameOver";
+    private TextView tvScore, tvPersonalBest;
+    private ImageView achievementCloud;
+    private SharedPreferences preferences;
+    private Set<String> achievements, updatedAchievements;
+
+    @SuppressLint("SetTextI18n")
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.game_over);
+
+        // get recent score from the intent
+        int score = getIntent().getExtras().getInt("score");
+
+        // update achievements based on recent score
+        int TopScore = updateAchievements(score);
+
+        // initialize views
+        achievementCloud = findViewById(R.id.achievement_cloud_button);
+        tvScore = findViewById(R.id.tvScore);
+        tvPersonalBest = findViewById(R.id.tvPersonalBest);
+        tvScore.setText("" + score);
+        tvPersonalBest.setText("" + TopScore);
+
+        // put the achievements in a String[] so they can be put into the intent
+        SharedPreferences preferences = getSharedPreferences("JellyPreferences", Context.MODE_PRIVATE);
+        achievements = new HashSet<String>(preferences.getStringSet("Jelly Achievements", new HashSet<String>()));
+        Iterator<String> iterator = achievements.iterator();
+        final String[] achievementList = new String[achievements.size()];
+        for (int i = 0; iterator.hasNext(); i++){
+            achievementList[i] = iterator.next();
+        }
+
+        Log.d(TAG, "onCreate: achievements: " + achievementList);
+
+
+        // if any achievements have been unlocked, initialize the cloud on the bottom right
+        // as a button to go to the achievements section
+        if (!achievements.isEmpty()) {
+            achievementCloud.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(GameOver.this, Achievements.class);
+                    intent.putExtra("Achievements List", achievementList);
+                    startActivity(intent);
+                }
+            });
+        }
+    }
+
+    public void restart(View view){
+        Intent intent = new Intent(GameOver.this, MainActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
+    public void exit(View view){
+        finish();
+    }
+
+    public int updateAchievements(int recentScore){
+        // get top score from sharedPreferences and initialize some variables
+        preferences = getSharedPreferences("JellyPreferences", MODE_PRIVATE);
+        int TopScore = preferences.getInt("TopScore", 0);
+        achievements = preferences.getStringSet("Jelly Achievements", new HashSet<String>());
+        updatedAchievements = new HashSet<String>();
+
+        // if recent score is better, replace in sharedPreferences
+        SharedPreferences.Editor editor = preferences.edit();
+        if (recentScore > TopScore) {
+            TopScore = recentScore;
+            editor.putInt("TopScore", TopScore);
+            editor.apply();
+        }
+
+        // if no preferences exist, create a new achievements set and add it
+        if(!preferences.contains("Jelly Achievements")) {
+            updatedAchievements.add("Played Game");
+            editor.putStringSet("Jelly Achievements", achievements);
+            editor.apply();
+            Log.d(TAG, "updateAchievements: achievements created");
+            return TopScore;
+        }else{
+            updatedAchievements.addAll(achievements);
+        }
+
+        // log the achievements so I know wtf is wrong
+        Log.d(TAG, "updateAchievements: achievements: " + updatedAchievements);
+
+        // update achievements based on recentScore and past achievements
+        if(recentScore > 99){
+            if(!achievements.contains("100 Easy")){
+                updatedAchievements.add("100 Easy");
+                Toast.makeText(getApplicationContext(), "Achievement 100 Easy!", Toast.LENGTH_LONG).show();
+                editor.putStringSet("Jelly Achievements", updatedAchievements);
+                editor.apply();
+            }else if(achievements.contains("100 Easy")&&!achievements.contains("100 Hard")){
+                updatedAchievements.add("100 Hard");
+                Toast.makeText(getApplicationContext(), "Achievement 100 Hard!", Toast.LENGTH_LONG).show();
+                editor.putStringSet("Jelly Achievements", updatedAchievements);
+                editor.apply();
+            }
+        }
+
+        // return TopScore
+        return TopScore;
+    }
+
+}
